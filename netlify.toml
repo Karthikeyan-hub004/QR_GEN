@@ -1,6 +1,0 @@
-﻿[build]
-  command = "cd frontend && npm run build"
-  publish = "frontend/build"
-
-[build.environment]
-  NODE_VERSION = "18"
