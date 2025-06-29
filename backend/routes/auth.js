@@ -6,7 +6,8 @@ const auth = require('../middleware/auth');
 
 const router = express.Router();
 
-// Register
+// @route   POST /api/auth/register
+// @desc    Register new user
 router.post('/register', [
   body('username').isLength({ min: 3 }).trim().escape(),
   body('email').isEmail().normalizeEmail(),
@@ -30,7 +31,7 @@ router.post('/register', [
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.status(201).json({
+    return res.status(201).json({
       token,
       user: {
         id: user._id,
@@ -39,11 +40,13 @@ router.post('/register', [
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Registration error:', error.message);
+    return res.status(500).json({ message: 'Server error during registration' });
   }
 });
 
-// Login
+// @route   POST /api/auth/login
+// @desc    Log in user
 router.post('/login', [
   body('email').isEmail().normalizeEmail(),
   body('password').exists()
@@ -57,18 +60,13 @@ router.post('/login', [
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
+    if (!user || !(await user.comparePassword(password))) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.json({
+    return res.json({
       token,
       user: {
         id: user._id,
@@ -77,17 +75,20 @@ router.post('/login', [
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Login error:', error.message);
+    return res.status(500).json({ message: 'Server error during login' });
   }
 });
 
-// Get current user
+// @route   GET /api/auth/me
+// @desc    Get current user
 router.get('/me', auth, async (req, res) => {
   try {
     const user = await User.findById(req.userId).select('-password');
-    res.json(user);
+    return res.json(user);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Fetch user error:', error.message);
+    return res.status(500).json({ message: 'Server error while fetching user' });
   }
 });
 
