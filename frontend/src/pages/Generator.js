@@ -7,7 +7,7 @@ import { Download, Save } from 'lucide-react';
 
 const Generator = () => {
   const [qrCode, setQrCode] = useState(null);
-  const [previewMode, setPreviewMode] = useState(false);
+  
   
   const { register, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {
