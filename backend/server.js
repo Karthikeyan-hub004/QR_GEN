@@ -15,13 +15,10 @@ app.use(helmet());
 
 // CORS configuration for Netlify + localhost + preview deploys
 app.use(cors({
-  origin: [
-    process.env.CLIENT_URL,
-    'http://localhost:3000',
-    /\.netlify\.app$/
-  ],
+  origin: [process.env.CLIENT_URL, /\.netlify\.app$/, 'http://localhost:3000'],
   credentials: true
 }));
+
 
 // Rate limiting
 const limiter = rateLimit({
