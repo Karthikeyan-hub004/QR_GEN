@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-// Create an axios instance with baseURL from env
-const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL  || 'http://localhost:5000' 
+// Determine backend base URL
+const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-});
+// Log the current base URL (optional: helpful for debugging in Netlify logs)
+console.log('✅ Axios Base URL:', BASE_URL);
+
+// Create a reusable Axios instance
+const api = axios.create({ baseURL: BASE_URL });
 
 const AuthContext = createContext();
 
@@ -38,31 +41,42 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       localStorage.removeItem('token');
       delete api.defaults.headers.common['Authorization'];
+      console.error('Failed to fetch user:', error.message);
     } finally {
       setLoading(false);
     }
   };
 
   const login = async (email, password) => {
-    const response = await api.post('/api/auth/login', { email, password });
-    const { token, user } = response.data;
-    
-    localStorage.setItem('token', token);
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    setUser(user);
-    
-    return response.data;
+    try {
+      const response = await api.post('/api/auth/login', { email, password });
+      const { token, user } = response.data;
+
+      localStorage.setItem('token', token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setUser(user);
+
+      return response.data;
+    } catch (error) {
+      console.error('Login failed:', error.message);
+      throw error;
+    }
   };
 
   const register = async (username, email, password) => {
-    const response = await api.post('/api/auth/register', { username, email, password });
-    const { token, user } = response.data;
-    
-    localStorage.setItem('token', token);
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    setUser(user);
-    
-    return response.data;
+    try {
+      const response = await api.post('/api/auth/register', { username, email, password });
+      const { token, user } = response.data;
+
+      localStorage.setItem('token', token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setUser(user);
+
+      return response.data;
+    } catch (error) {
+      console.error('Registration failed:', error.message);
+      throw error;
+    }
   };
 
   const logout = () => {
@@ -71,16 +85,8 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  const value = {
-    user,
-    login,
-    register,
-    logout,
-    loading
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
