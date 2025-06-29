@@ -3,7 +3,8 @@ import axios from 'axios';
 
 // Create an axios instance with baseURL from env
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL
+  baseURL: process.env.REACT_APP_API_URL  || 'http://localhost:5000' 
+
 });
 
 const AuthContext = createContext();
