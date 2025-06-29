@@ -62,17 +62,21 @@ export const AuthProvider = ({ children }) => {
       throw error;
     }
   };
+const register = async (username, email, password) => {
+  const response = await api.post(
+    '/api/auth/register',
+    { username, email, password },
+    { withCredentials: true }  // 🔥 This is the key
+  );
 
-  const register = async (username, email, password) => {
-    try {
-      const response = await api.post('/api/auth/register', { username, email, password });
-      const { token, user } = response.data;
+  const { token, user } = response.data;
 
-      localStorage.setItem('token', token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser(user);
+  localStorage.setItem('token', token);
+  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  setUser(user);
 
-      return response.data;
+  return response.data;
+ 
     } catch (error) {
       console.error('Registration failed:', error.message);
       throw error;
